@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roadmap Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f8f7f4;
+        --surface: #ffffff;
+        --ink: #1a1a2e;
+        --ink-soft: #5c5c7a;
+        --border: #e2e0da;
+        --accent: #3b5bdb;
+        --radius: 10px;
+        --panel-bg: #1a1a2e;
+        --panel-surface: #242440;
+        --panel-border: #333358;
+        --panel-ink: #e8e8f0;
+        --panel-soft: #9090b0;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: #111122;
+        color: var(--panel-ink);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ── Top Bar ── */
+      .topbar {
+        background: var(--panel-surface);
+        border-bottom: 1px solid var(--panel-border);
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+      }
+      .topbar-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 18px;
+        color: var(--panel-ink);
+      }
+      .topbar-title span {
+        font-style: italic;
+        color: #7c9ff0;
+      }
+      .topbar-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 7px 14px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #2f4ec4;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--panel-soft);
+        border: 1px solid var(--panel-border);
+      }
+      .btn-secondary:hover {
+        color: var(--panel-ink);
+        border-color: var(--panel-soft);
+      }
+
+      /* ── Layout ── */
+      .layout {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+        height: calc(100vh - 53px);
+      }
+
+      /* ── Editor Panel ── */
+      .editor {
+        width: 340px;
+        flex-shrink: 0;
+        background: var(--panel-bg);
+        border-right: 1px solid var(--panel-border);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .editor-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+      }
+      .editor-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .editor-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .editor-scroll::-webkit-scrollbar-thumb {
+        background: var(--panel-border);
+        border-radius: 2px;
+      }
+
+      .section-header {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--panel-soft);
+        padding: 10px 0 6px;
+        margin-top: 8px;
+        border-bottom: 1px solid var(--panel-border);
+        margin-bottom: 10px;
+      }
+      .section-header:first-child {
+        margin-top: 0;
+      }
+
+      .field-row {
+        margin-bottom: 10px;
+      }
+      .field-label {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--panel-soft);
+        margin-bottom: 4px;
+        display: block;
+      }
+      .field-input {
+        width: 100%;
+        background: var(--panel-surface);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        color: var(--panel-ink);
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .field-input:focus {
+        border-color: var(--accent);
+      }
+      .field-input[type="color"] {
+        padding: 2px 4px;
+        height: 32px;
+        cursor: pointer;
+      }
+
+      /* Quarter accordion */
+      .quarter-section {
+        background: var(--panel-surface);
+        border: 1px solid var(--panel-border);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      }
+      .quarter-toggle {
+        width: 100%;
+        background: none;
+        border: none;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        color: var(--panel-ink);
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+      }
+      .quarter-toggle:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .quarter-toggle .q-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+      .quarter-toggle-left {
+        display: flex;
+        align-items: center;
+      }
+      .toggle-arrow {
+        font-size: 10px;
+        transition: transform 0.2s;
+        color: var(--panel-soft);
+      }
+      .quarter-section.open .toggle-arrow {
+        transform: rotate(90deg);
+      }
+
+      .quarter-body {
+        display: none;
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--panel-border);
+      }
+      .quarter-section.open .quarter-body {
+        display: block;
+      }
+
+      /* Category blocks in editor */
+      .cat-editor-block {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        margin-bottom: 8px;
+        overflow: hidden;
+      }
+      .cat-editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--panel-border);
+        gap: 8px;
+      }
+      .cat-editor-name {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        color: var(--panel-ink);
+        min-width: 0;
+      }
+      .cat-color-pick {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        padding: 1px;
+        flex-shrink: 0;
+      }
+      .btn-icon {
+        background: none;
+        border: none;
+        color: var(--panel-soft);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 2px 4px;
+        border-radius: 4px;
+        line-height: 1;
+        transition: color 0.15s;
+      }
+      .btn-icon:hover {
+        color: #e05c5c;
+      }
+      .btn-icon.add:hover {
+        color: #5ce08a;
+      }
+
+      .cat-items-list {
+        padding: 6px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .item-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .item-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--panel-border);
+        outline: none;
+        font-size: 11px;
+        color: var(--panel-ink);
+        padding: 3px 0;
+        font-family: "DM Sans", sans-serif;
+      }
+      .item-input:focus {
+        border-color: var(--accent);
+      }
+
+      .add-cat-row {
+        margin-top: 6px;
+      }
+      .add-cat-btn {
+        width: 100%;
+        padding: 6px;
+        background: transparent;
+        border: 1px dashed var(--panel-border);
+        border-radius: 6px;
+        color: var(--panel-soft);
+        font-size: 11px;
+        font-family: "DM Mono", monospace;
+        cursor: pointer;
+        transition: all 0.15s;
+        letter-spacing: 0.05em;
+      }
+      .add-cat-btn:hover {
+        border-color: var(--accent);
+        color: #7c9ff0;
+      }
+
+      /* Quarter uncertain toggle */
+      .uncertain-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .toggle-switch {
+        position: relative;
+        width: 32px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-switch .slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--panel-border);
+        border-radius: 9px;
+        transition: 0.2s;
+      }
+      .toggle-switch .slider::before {
+        content: "";
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        left: 3px;
+        bottom: 3px;
+        background: var(--panel-soft);
+        border-radius: 50%;
+        transition: 0.2s;
+      }
+      .toggle-switch input:checked + .slider {
+        background: var(--accent);
+      }
+      .toggle-switch input:checked + .slider::before {
+        transform: translateX(14px);
+        background: #fff;
+      }
+      .uncertain-label {
+        font-size: 11px;
+        color: var(--panel-soft);
+        font-family: "DM Mono", monospace;
+      }
+
+      /* ── Preview Panel ── */
+      .preview {
+        flex: 1;
+        overflow: auto;
+        background: #e8e7e4;
+        padding: 32px;
+      }
+      .preview::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .preview::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .preview::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+      }
+
+      /* ══════════════════════════════
+   ROADMAP RENDER STYLES
+   ══════════════════════════════ */
+      .roadmap-wrap {
+        font-family: "DM Sans", sans-serif;
+        background: #f8f7f4;
+        color: #1a1a2e;
+        padding: 40px 36px 64px;
+        min-width: 700px;
+        border-radius: 12px;
+        box-shadow: 0 8px 48px rgba(0, 0, 0, 0.15);
+      }
+
+      .rm-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 40px;
+        padding-bottom: 24px;
+        border-bottom: 1.5px solid #e2e0da;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .rm-eyebrow {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #5c5c7a;
+        margin-bottom: 8px;
+      }
+      .rm-h1 {
+        font-family: "DM Serif Display", serif;
+        font-size: clamp(24px, 3.5vw, 40px);
+        line-height: 1.05;
+        color: #1a1a2e;
+        letter-spacing: -0.02em;
+      }
+      .rm-h1 em {
+        font-style: italic;
+      }
+
+      .rm-legend {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+      }
+      .rm-legend-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      .rm-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        color: #5c5c7a;
+        font-family: "DM Mono", monospace;
+      }
+      .rm-legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .rm-legend-swatch {
+        width: 20px;
+        height: 8px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      .rm-grid {
+        display: grid;
+        gap: 0;
+        border: 1.5px solid #e2e0da;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 32px rgba(26, 26, 46, 0.07);
+      }
+
+      .rm-quarter-col {
+        border-right: 1.5px solid #e2e0da;
+        display: flex;
+        flex-direction: column;
+      }
+      .rm-quarter-col:last-child {
+        border-right: none;
+      }
+
+      .rm-quarter-header {
+        padding: 18px 18px 14px;
+        border-bottom: 1.5px solid #e2e0da;
+        position: relative;
+        overflow: hidden;
+        text-align: right;
+      }
+      .rm-quarter-header::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+
+      .rm-quarter-label {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .rm-version-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 15px;
+        font-weight: 500;
+        color: #1a1a2e;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+      .rm-version-badge.uncertain {
+        color: #5c5c7a;
+      }
+      .rm-uncertain-mark {
+        font-size: 11px;
+        color: #5c5c7a;
+        font-style: italic;
+        font-family: "DM Sans", sans-serif;
+      }
+
+      .rm-uncertain .rm-quarter-header {
+        background: repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 6px,
+          rgba(0, 0, 0, 0.015) 6px,
+          rgba(0, 0, 0, 0.015) 12px
+        );
+      }
+
+      .rm-window-strip {
+        display: flex;
+        height: 28px;
+        border-bottom: 1.5px solid #e2e0da;
+        font-size: 9.5px;
+        font-family: "DM Mono", monospace;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        overflow: hidden;
+      }
+      .rm-window-seg {
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .rm-cards-body {
+        padding: 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+      }
+
+      .rm-cat-section {
+      }
+      .rm-cat-label {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .rm-cat-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        opacity: 0.2;
+      }
+
+      .rm-card {
+        border-radius: 7px;
+        padding: 7px 9px;
+        font-size: 12px;
+        line-height: 1.4;
+        border: 1px solid transparent;
+        margin-bottom: 5px;
+      }
+      .rm-empty-cat {
+        padding: 5px 9px;
+        font-size: 11px;
+        color: #5c5c7a;
+        font-style: italic;
+        opacity: 0.5;
+      }
+
+      .rm-uncertainty-notice {
+        margin-top: 10px;
+        padding: 6px 9px;
+        background: rgba(0, 0, 0, 0.04);
+        border-radius: 6px;
+        font-size: 10.5px;
+        color: #5c5c7a;
+        font-style: italic;
+      }
+
+      .rm-certainty-bar {
+        margin-top: 28px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .rm-certainty-label {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: #5c5c7a;
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+      }
+      .rm-certainty-track {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        position: relative;
+      }
+
+      .rm-footer {
+        margin-top: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 18px;
+        border-top: 1px solid #e2e0da;
+      }
+      .rm-footer-note {
+        font-size: 11px;
+        color: #5c5c7a;
+        font-family: "DM Mono", monospace;
+      }
+      .rm-footer-brand {
+        font-family: "DM Serif Display", serif;
+        font-size: 13px;
+        color: #5c5c7a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="topbar-title">Roadmap <span>Builder</span></div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="resetToDefault()">
+          Reset to Default
+        </button>
+        <input
+          type="file"
+          id="importFileInput"
+          accept=".json"
+          style="display: none"
+          onchange="importJSON(this)"
+        />
+        <button
+          class="btn btn-secondary"
+          onclick="document.getElementById('importFileInput').click()"
+        >
+          Import state
+        </button>
+        <button class="btn btn-secondary" onclick="exportJSON()">
+          Export State
+        </button>
+        <button class="btn btn-primary" onclick="exportHTML()">
+          Export HTML
+        </button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- Editor -->
+      <div class="editor">
+        <div class="editor-scroll" id="editorScroll">
+          <!-- Header settings -->
+          <div class="section-header">Header</div>
+          <div class="field-row">
+            <label class="field-label">Eyebrow text</label>
+            <input
+              class="field-input"
+              id="cfg-eyebrow"
+              type="text"
+              placeholder="Company · Roadmap · 2026"
+              oninput="render()"
+            />
+          </div>
+          <div class="field-row">
+            <label class="field-label">Title (use | to split for italic)</label>
+            <input
+              class="field-input"
+              id="cfg-title"
+              type="text"
+              placeholder="Product|Workspace"
+              oninput="render()"
+            />
+          </div>
+          <div class="field-row">
+            <label class="field-label">Footer note</label>
+            <input
+              class="field-input"
+              id="cfg-footer-note"
+              type="text"
+              oninput="render()"
+            />
+          </div>
+          <div class="field-row">
+            <label class="field-label">Footer brand</label>
+            <input
+              class="field-input"
+              id="cfg-footer-brand"
+              type="text"
+              oninput="render()"
+            />
+          </div>
+
+          <div class="section-header">Quarters</div>
+          <div id="quartersEditor"></div>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview">
+        <div id="roadmapPreview"></div>
+      </div>
+    </div>
+
+    <script>
+      // ── Default state ──────────────────────────────────────────────
+      const DEFAULT_STATE = {
+        eyebrow: "ProDVX · Roadmap · 2026",
+        title: "Example|Roadmap",
+        footerNote: "1 Jan 2026 · Subject to change",
+        footerBrand: "ProDVX",
+        quarters: [
+          {
+            id: "q1",
+            label: "Q1 · Jan – Mar",
+            color: "#3B5BDB",
+            version: "Launch",
+            uncertain: false,
+            windows: [
+              { label: "Development", color: "#1971C2", flex: 8 },
+              { label: "Frozen", color: "#9C36B5", flex: 3 },
+              { label: "Release", color: "#09a851", flex: 1, hideLabel: true },
+            ],
+            categories: [
+              {
+                id: "cat_q1_0",
+                name: "Features",
+                color: "#364FC7",
+                items: ["First Item", "Another Item"],
+              },
+              {
+                id: "cat_q1_1",
+                name: "Documentation",
+                color: "#087F5B",
+                items: ["Documentation 1", "Document 2"],
+              },
+              {
+                id: "cat_q1_2",
+                name: "Others",
+                color: "#ea6b11",
+                items: ["Other 1", "Other 2"],
+              },
+            ],
+          },
+          {
+            id: "q2",
+            label: "Q2 · Apr – Jun",
+            color: "#0CA678",
+            version: "v1.1.0",
+            uncertain: false,
+            windows: [
+              { label: "Feedback of v1.0.0", color: "#1971C2", flex: 8 },
+              { label: "Frozen", color: "#9C36B5", flex: 3 },
+              { label: "Release", color: "#09a851", flex: 1, hideLabel: true },
+            ],
+            categories: [
+              {
+                id: "cat_q1_0",
+                name: "Features",
+                color: "#364FC7",
+                items: ["First Item", "Another Item"],
+              },
+              {
+                id: "cat_q1_1",
+                name: "Documentation",
+                color: "#087F5B",
+                items: ["Documentation 1", "Document 2"],
+              },
+              {
+                id: "cat_q1_2",
+                name: "Others",
+                color: "#ea6b11",
+                items: ["Other 1", "Other 2"],
+              },
+            ],
+          },
+          {
+            id: "q3",
+            label: "Q3 · Jul – Sep",
+            color: "#D97706",
+            version: "v1.2.0",
+            uncertain: false,
+            windows: [
+              { label: "Feedback of v1.1.0", color: "#1971C2", flex: 8 },
+              { label: "Frozen", color: "#9C36B5", flex: 3 },
+              { label: "Release", color: "#09a851", flex: 1, hideLabel: true },
+            ],
+            categories: [
+              {
+                id: "cat_q1_0",
+                name: "Features",
+                color: "#364FC7",
+                items: ["First Item", "Another Item"],
+              },
+              {
+                id: "cat_q1_1",
+                name: "Documentation",
+                color: "#087F5B",
+                items: ["Documentation 1", "Document 2"],
+              },
+              {
+                id: "cat_q1_2",
+                name: "Others",
+                color: "#ea6b11",
+                items: ["Other 1", "Other 2"],
+              },
+            ],
+          },
+          {
+            id: "q4",
+            label: "Q4 · Oct – Dec",
+            color: "#C92A2A",
+            version: "v1.3.0",
+            uncertain: true,
+            windows: [
+              { label: "Feedback of v1.2.0", color: "#1971C2", flex: 8 },
+              { label: "Frozen", color: "#9C36B5", flex: 3 },
+              { label: "Release", color: "#09a851", flex: 1, hideLabel: true },
+            ],
+            categories: [
+              { id: "cat_q1_0", name: "Features", color: "#364FC7", items: [] },
+              {
+                id: "cat_q1_1",
+                name: "Documentation",
+                color: "#087F5B",
+                items: ["Documentation 1", "Document 2"],
+              },
+              {
+                id: "cat_q1_2",
+                name: "Others",
+                color: "#ea6b11",
+                items: ["Other 1", "Other 2"],
+              },
+            ],
+          },
+        ],
+      };
+
+      let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+      function resetToDefault() {
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        buildEditor();
+        render();
+      }
+
+      // ── Editor Builder ──────────────────────────────────────────────
+      function buildEditor() {
+        document.getElementById("cfg-eyebrow").value = state.eyebrow;
+        document.getElementById("cfg-title").value = state.title;
+        document.getElementById("cfg-footer-note").value = state.footerNote;
+        document.getElementById("cfg-footer-brand").value = state.footerBrand;
+
+        const container = document.getElementById("quartersEditor");
+        container.innerHTML = "";
+
+        state.quarters.forEach((q, qi) => {
+          const section = document.createElement("div");
+          section.className = "quarter-section open";
+          section.id = `qsec-${q.id}`;
+
+          section.innerHTML = `
+      <button class="quarter-toggle" onclick="toggleQuarter('${q.id}')">
+        <span class="quarter-toggle-left">
+          <span class="q-dot" style="background:${q.color}"></span>
+          <span class="qname-display">${q.label}</span>
+        </span>
+        <span class="toggle-arrow">›</span>
+      </button>
+      <div class="quarter-body">
+        <div class="field-row">
+          <label class="field-label">Label</label>
+          <input class="field-input" value="${q.label}" oninput="state.quarters[${qi}].label=this.value; render()">
+        </div>
+        <div class="field-row">
+          <label class="field-label">Version / heading</label>
+          <input class="field-input" value="${q.version}" oninput="state.quarters[${qi}].version=this.value; render()">
+        </div>
+        <div class="section-header" style="margin-top:4px">Window Strip</div>
+        <div id="windows-${q.id}"></div>
+        <div class="add-cat-row">
+          <button class="add-cat-btn" onclick="addWindow(${qi})">+ Add Window</button>
+        </div>
+        <div class="field-row" style="display:flex;gap:8px;align-items:center">
+          <label class="field-label" style="margin:0;flex:1">Quarter colour</label>
+          <input type="color" class="field-input" style="width:48px;flex:none" value="${q.color}" oninput="state.quarters[${qi}].color=this.value; document.querySelector('#qsec-${q.id} .q-dot').style.background=this.value; render()">
+        </div>
+        <div class="uncertain-row">
+          <label class="toggle-switch">
+            <input type="checkbox" ${q.uncertain ? "checked" : ""} onchange="state.quarters[${qi}].uncertain=this.checked; render()">
+            <span class="slider"></span>
+          </label>
+          <span class="uncertain-label">Uncertain / Tentative</span>
+        </div>
+
+        <div class="section-header" style="margin-top:4px">Categories</div>
+        <div id="cats-${q.id}"></div>
+        <div class="add-cat-row">
+          <button class="add-cat-btn" onclick="addCategory(${qi})">+ Add Category</button>
+        </div>
+      </div>
+    `;
+          container.appendChild(section);
+          buildWindowsList(q, qi);
+          buildCategoryEditors(q, qi);
+        });
+      }
+
+      function buildCategoryEditors(q, qi) {
+        const container = document.getElementById(`cats-${q.id}`);
+        if (!container) return;
+        container.innerHTML = "";
+        q.categories.forEach((cat, ci) => {
+          const block = document.createElement("div");
+          block.className = "cat-editor-block";
+          block.innerHTML = `
+      <div class="cat-editor-header">
+        <input class="cat-editor-name" value="${cat.name}" placeholder="Category name"
+          oninput="state.quarters[${qi}].categories[${ci}].name=this.value; render()">
+        <input type="color" class="cat-color-pick" value="${cat.color}"
+          oninput="state.quarters[${qi}].categories[${ci}].color=this.value; render()">
+        <button class="btn-icon add" title="Add item" onclick="addItem(${qi},${ci})">+</button>
+        <button class="btn-icon" title="Remove category" onclick="removeCategory(${qi},${ci})">×</button>
+      </div>
+      <div class="cat-items-list" id="items-${q.id}-${ci}"></div>
+    `;
+          container.appendChild(block);
+          buildItemsList(q, qi, ci);
+        });
+      }
+
+      function buildItemsList(q, qi, ci) {
+        const container = document.getElementById(`items-${q.id}-${ci}`);
+        if (!container) return;
+        container.innerHTML = "";
+        q.categories[ci].items.forEach((item, ii) => {
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.innerHTML = `
+      <input class="item-input" value="${escAttr(item)}" placeholder="Item text"
+        oninput="state.quarters[${qi}].categories[${ci}].items[${ii}]=this.value; render()">
+      <button class="btn-icon" onclick="removeItem(${qi},${ci},${ii})">×</button>
+    `;
+          container.appendChild(row);
+        });
+      }
+
+      function toggleQuarter(qid) {
+        document.getElementById(`qsec-${qid}`).classList.toggle("open");
+      }
+
+      function addCategory(qi) {
+        const q = state.quarters[qi];
+        q.categories.push({
+          id: `cat_${q.id}_${Date.now()}`,
+          name: "New Category",
+          color: "#888888",
+          items: [],
+        });
+        buildCategoryEditors(q, qi);
+        render();
+      }
+
+      function removeCategory(qi, ci) {
+        state.quarters[qi].categories.splice(ci, 1);
+        buildCategoryEditors(state.quarters[qi], qi);
+        render();
+      }
+
+      function addItem(qi, ci) {
+        const q = state.quarters[qi];
+        q.categories[ci].items.push("New Item");
+        buildCategoryEditors(q, qi);
+        render();
+      }
+
+      function removeItem(qi, ci, ii) {
+        state.quarters[qi].categories[ci].items.splice(ii, 1);
+        buildCategoryEditors(state.quarters[qi], qi);
+        render();
+      }
+
+      function buildWindowsList(q, qi) {
+        const container = document.getElementById(`windows-${q.id}`);
+        if (!container) return;
+        container.innerHTML = "";
+        (q.windows || []).forEach((win, wi) => {
+          const row = document.createElement("div");
+          row.className = "item-row";
+          row.style.marginBottom = "4px";
+          row.innerHTML = `
+      <input type="color" class="cat-color-pick" value="${win.color}"
+        oninput="state.quarters[${qi}].windows[${wi}].color=this.value; render()">
+      <input class="item-input" value="${escAttr(win.label)}" placeholder="Label"
+        oninput="state.quarters[${qi}].windows[${wi}].label=this.value; render()">
+      <input type="number" title="Relative width" min="1" max="20" value="${win.flex || 1}"
+        style="width:34px;background:transparent;border:none;border-bottom:1px solid var(--panel-border);outline:none;font-size:11px;color:var(--panel-soft);text-align:center;padding:3px 0"
+        oninput="state.quarters[${qi}].windows[${wi}].flex=parseInt(this.value)||1; render()">
+      <button class="btn-icon" title="${win.hideLabel ? "Show label in strip" : "Hide label in strip"}"
+        style="${win.hideLabel ? "text-decoration:line-through;opacity:0.35" : ""}"
+        onclick="state.quarters[${qi}].windows[${wi}].hideLabel=!state.quarters[${qi}].windows[${wi}].hideLabel; buildWindowsList(state.quarters[${qi}],${qi}); render()">T</button>
+      <button class="btn-icon" onclick="removeWindow(${qi},${wi})">×</button>
+    `;
+          container.appendChild(row);
+        });
+      }
+
+      function addWindow(qi) {
+        const q = state.quarters[qi];
+        if (!q.windows) q.windows = [];
+        q.windows.push({ label: "Window", color: "#888888", flex: 1 });
+        buildWindowsList(q, qi);
+        render();
+      }
+
+      function removeWindow(qi, wi) {
+        state.quarters[qi].windows.splice(wi, 1);
+        buildWindowsList(state.quarters[qi], qi);
+        render();
+      }
+
+      // ── Read header fields ──────────────────────────────────────────
+      function readHeaderFields() {
+        state.eyebrow = document.getElementById("cfg-eyebrow").value;
+        state.title = document.getElementById("cfg-title").value;
+        state.footerNote = document.getElementById("cfg-footer-note").value;
+        state.footerBrand = document.getElementById("cfg-footer-brand").value;
+      }
+
+      // ── Render ──────────────────────────────────────────────────────
+      function render() {
+        readHeaderFields();
+
+        const colCount = state.quarters.length;
+        const titleParts = state.title.split("|");
+        const titleHTML =
+          titleParts.length > 1
+            ? `${esc(titleParts[0])} <em>${esc(titleParts[1])}</em>`
+            : esc(state.title);
+
+        // Build legend from all unique categories across quarters
+        const seenCats = new Map();
+        state.quarters.forEach((q) =>
+          q.categories.forEach((c) => {
+            if (!seenCats.has(c.name)) seenCats.set(c.name, c.color);
+          }),
+        );
+        const legendCats = [...seenCats.entries()]
+          .map(
+            ([name, color]) =>
+              `<div class="rm-legend-item"><span class="rm-legend-dot" style="background:${color}"></span>${esc(name)}</div>`,
+          )
+          .join("");
+
+        // Build quarters
+        const quartersHTML = state.quarters
+          .map((q) => {
+            const catsHTML = q.categories
+              .map((cat) => {
+                const cardsHTML = cat.items.length
+                  ? cat.items
+                      .map((item) => {
+                        const bg = hexToRgba(cat.color, 0.1);
+                        const border = hexToRgba(cat.color, 0.3);
+                        const textColor = darken(cat.color);
+                        return `<div class="rm-card" style="background:${bg};border-color:${border};color:${textColor}">${esc(item)}</div>`;
+                      })
+                      .join("")
+                  : `<div class="rm-empty-cat">TBD</div>`;
+
+                return `
+        <div class="rm-cat-section">
+          <div class="rm-cat-label" style="color:${cat.color}">${esc(cat.name)}</div>
+          ${cardsHTML}
+        </div>`;
+              })
+              .join("");
+
+            const uncertainClass = q.uncertain ? " rm-uncertain" : "";
+            const versionBadgeClass = q.uncertain ? " uncertain" : "";
+            const uncertainNotice = q.uncertain
+              ? `<div class="rm-uncertainty-notice">◐ Subject to change — details confirmed closer to release</div>`
+              : "";
+            const versionExtra = q.uncertain
+              ? `<span class="rm-uncertain-mark">tentative</span>`
+              : "";
+
+            return `
+      <div class="rm-quarter-col${uncertainClass}">
+        <div class="rm-quarter-header" style="--qcolor:${q.color}">
+          <style>.rm-quarter-col:nth-child(${state.quarters.indexOf(q) + 1}) .rm-quarter-header::before { background: ${q.color}; }</style>
+          <div class="rm-quarter-label" style="color:${q.color}">${esc(q.label)}</div>
+          <div class="rm-version-badge${versionBadgeClass}">${esc(q.version)} ${versionExtra}</div>
+        </div>
+        <div class="rm-window-strip">
+          ${(q.windows || []).map((win) => `<div class="rm-window-seg" style="background:${win.color};flex:${win.flex || 1}">${win.hideLabel ? "" : esc(win.label)}</div>`).join("")}
+        </div>
+        <div class="rm-cards-body">
+          ${catsHTML}
+          ${uncertainNotice}
+        </div>
+      </div>`;
+          })
+          .join("");
+
+        // Build gradient for certainty bar using first + last quarter colours
+        const firstColor = state.quarters[0]?.color || "#3B5BDB";
+        const lastColor =
+          state.quarters[state.quarters.length - 1]?.color || "#ccc";
+
+        const html = `
+    <div class="roadmap-wrap">
+      <div class="rm-header">
+        <div>
+          <div class="rm-eyebrow">${esc(state.eyebrow)}</div>
+          <div class="rm-h1">${titleHTML}</div>
+        </div>
+        <div class="rm-legend">
+          <div class="rm-legend-row">${legendCats}</div>
+          <div class="rm-legend-row">
+            ${(state.quarters[0]?.windows || [])
+              .filter((w) => w.label)
+              .map(
+                (win) =>
+                  `<div class="rm-legend-item"><span class="rm-legend-swatch" style="background:${win.color}"></span>${esc(win.label)}</div>`,
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+      <div class="rm-grid" style="grid-template-columns:repeat(${colCount},1fr)">
+        ${quartersHTML}
+      </div>
+      <div class="rm-certainty-bar">
+        <span class="rm-certainty-label">CONFIRMED</span>
+        <div class="rm-certainty-track" style="background:linear-gradient(to right,${firstColor},${lastColor})">
+          <span style="position:absolute;right:-8px;top:50%;transform:translateY(-50%);font-size:12px;color:${lastColor}">›</span>
+        </div>
+        <span class="rm-certainty-label">TENTATIVE</span>
+      </div>
+      <div class="rm-footer">
+        <span class="rm-footer-note">${esc(state.footerNote)}</span>
+        <span class="rm-footer-brand">${esc(state.footerBrand)}</span>
+      </div>
+    </div>`;
+
+        document.getElementById("roadmapPreview").innerHTML = html;
+      }
+
+      // ── Export / Import ─────────────────────────────────────────────
+      function exportJSON() {
+        const blob = new Blob([JSON.stringify(state, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "roadmap.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function importJSON(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            state = JSON.parse(e.target.result);
+            buildEditor();
+            render();
+          } catch {
+            alert(
+              "Could not parse file — make sure it is a valid roadmap JSON.",
+            );
+          }
+        };
+        reader.readAsText(file);
+        input.value = "";
+      }
+
+      function exportHTML() {
+        const previewContent =
+          document.getElementById("roadmapPreview").innerHTML;
+        const titleParts = state.title.split("|");
+        const titleDisplay = titleParts.join(" ");
+
+        const exported = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(titleDisplay)} Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: #F8F7F4; color: #1A1A2E; padding: 48px 40px 80px; }
+.roadmap-wrap { max-width: 1400px; margin: 0 auto; }
+.rm-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:40px; padding-bottom:24px; border-bottom:1.5px solid #E2E0DA; gap:24px; flex-wrap:wrap; }
+.rm-eyebrow { font-family:'DM Mono',monospace; font-size:11px; font-weight:500; letter-spacing:0.18em; text-transform:uppercase; color:#5C5C7A; margin-bottom:8px; }
+.rm-h1 { font-family:'DM Serif Display',serif; font-size:clamp(28px,4vw,46px); line-height:1.05; color:#1A1A2E; letter-spacing:-0.02em; }
+.rm-h1 em { font-style:italic; }
+.rm-legend { display:flex; flex-direction:column; gap:6px; align-items:flex-end; }
+.rm-legend-row { display:flex; gap:16px; flex-wrap:wrap; justify-content:flex-end; }
+.rm-legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:#5C5C7A; font-family:'DM Mono',monospace; }
+.rm-legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.rm-legend-swatch { width:20px; height:8px; border-radius:3px; flex-shrink:0; }
+.rm-grid { display:grid; gap:0; border:1.5px solid #E2E0DA; border-radius:16px; overflow:hidden; box-shadow:0 4px 32px rgba(26,26,46,0.07); }
+.rm-quarter-col { border-right:1.5px solid #E2E0DA; display:flex; flex-direction:column; }
+.rm-quarter-col:last-child { border-right:none; }
+.rm-quarter-header { padding:18px 18px 14px; border-bottom:1.5px solid #E2E0DA; position:relative; overflow:hidden; text-align:right; }
+.rm-quarter-header::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.rm-quarter-label { font-family:'DM Mono',monospace; font-size:11px; font-weight:500; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:4px; }
+.rm-version-badge { font-family:'DM Mono',monospace; font-size:15px; font-weight:500; color:#1A1A2E; display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+.rm-version-badge.uncertain { color:#5C5C7A; }
+.rm-uncertain-mark { font-size:11px; color:#5C5C7A; font-style:italic; font-family:'DM Sans',sans-serif; }
+.rm-uncertain .rm-quarter-header { background:repeating-linear-gradient(-45deg,transparent,transparent 6px,rgba(0,0,0,0.015) 6px,rgba(0,0,0,0.015) 12px); }
+.rm-window-strip { display:flex; height:28px; border-bottom:1.5px solid #E2E0DA; font-size:9.5px; font-family:'DM Mono',monospace; font-weight:500; letter-spacing:0.04em; overflow:hidden; }
+.rm-window-seg { color:#fff; display:flex; align-items:center; justify-content:center; padding:0 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rm-cards-body { padding:14px 12px; display:flex; flex-direction:column; gap:12px; flex:1; }
+.rm-cat-label { font-family:'DM Mono',monospace; font-size:9px; font-weight:500; letter-spacing:0.16em; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+.rm-cat-label::after { content:''; flex:1; height:1px; opacity:0.2; background:currentColor; }
+.rm-card { border-radius:7px; padding:7px 9px; font-size:12px; line-height:1.4; border:1px solid transparent; margin-bottom:5px; }
+.rm-card:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.10); transition:transform 0.15s,box-shadow 0.15s; }
+.rm-empty-cat { padding:5px 9px; font-size:11px; color:#5C5C7A; font-style:italic; opacity:0.5; }
+.rm-uncertainty-notice { margin-top:10px; padding:6px 9px; background:rgba(0,0,0,0.04); border-radius:6px; font-size:10.5px; color:#5C5C7A; font-style:italic; }
+.rm-certainty-bar { margin-top:28px; display:flex; align-items:center; gap:16px; }
+.rm-certainty-label { font-family:'DM Mono',monospace; font-size:10px; color:#5C5C7A; letter-spacing:0.1em; white-space:nowrap; }
+.rm-certainty-track { flex:1; height:6px; border-radius:3px; position:relative; }
+.rm-footer { margin-top:32px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; padding-top:18px; border-top:1px solid #E2E0DA; }
+.rm-footer-note { font-size:11px; color:#5C5C7A; font-family:'DM Mono',monospace; }
+.rm-footer-brand { font-family:'DM Serif Display',serif; font-size:13px; color:#5C5C7A; }
+</style>
+</head>
+<body>
+${previewContent}
+</body>
+</html>`;
+
+        const blob = new Blob([exported], { type: "text/html" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "roadmap.html";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // ── Helpers ──────────────────────────────────────────────────────
+      function esc(s) {
+        if (!s) return "";
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+      function escAttr(s) {
+        if (!s) return "";
+        return s.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+      }
+
+      function hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+      }
+
+      function darken(hex) {
+        // Return a darkened text color for the card
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgb(${Math.max(0, r - 80)},${Math.max(0, g - 80)},${Math.max(0, b - 80)})`;
+      }
+
+      // ── Init ──────────────────────────────────────────────────────────
+      buildEditor();
+      render();
+    </script>
+  </body>
+</html>
