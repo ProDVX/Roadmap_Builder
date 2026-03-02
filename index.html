@@ -1200,20 +1200,14 @@
 
       // ── Export / Import ─────────────────────────────────────────────
       function exportJSON() {
-        const blob = new Blob([JSON.stringify(state, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
+        const data = encodeURIComponent(JSON.stringify(state, null, 2));
         const a = document.createElement("a");
-        a.href = url;
+        a.href = "data:application/json;charset=utf-8," + data;
         a.download = "roadmap.json";
         a.style.display = "none";
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
+        setTimeout(() => document.body.removeChild(a), 100);
       }
 
       function importJSON(input) {
@@ -1294,18 +1288,13 @@
 	</body>
 	</html>`;
 
-        const blob = new Blob([exported], { type: "text/html" });
-        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = url;
+        a.href = "data:text/html;charset=utf-8," + encodeURIComponent(exported);
         a.download = "roadmap.html";
         a.style.display = "none";
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
+        setTimeout(() => document.body.removeChild(a), 100);
       }
 
       // ── Helpers ──────────────────────────────────────────────────────
