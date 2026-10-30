@@ -1550,8 +1550,13 @@
       }
 
       function exportHTML() {
-        const previewContent =
-          document.getElementById("roadmapPreview").innerHTML;
+        // Clone the preview and strip editor-only drag UI before serializing
+        const previewClone = document.getElementById("roadmapPreview").cloneNode(true);
+        previewClone.querySelectorAll('.rm-card-drag-handle').forEach(h => h.remove());
+        previewClone.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
+        previewClone.querySelectorAll('.rm-drag-over, .rm-card-dragging, .rm-cat-drag-over')
+          .forEach(el => el.classList.remove('rm-drag-over', 'rm-card-dragging', 'rm-cat-drag-over'));
+        const previewContent = previewClone.innerHTML;
         const titleParts = state.title.split("|");
         const titleDisplay = titleParts.join(" ");
 
